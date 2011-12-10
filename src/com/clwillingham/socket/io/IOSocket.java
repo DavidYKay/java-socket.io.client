@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -25,7 +27,7 @@ public class IOSocket {
 	private String webSocketAddress;
 	private MessageCallback callback;
 	private Timer timer;
-	
+        
 	private boolean connecting;
 	private boolean connected;
 	private boolean open;
@@ -58,6 +60,11 @@ public class IOSocket {
 			URLConnection connection = url.openConnection();
 			connection.setConnectTimeout(connectTimeout);
 			connection.setReadTimeout(connectTimeout);
+                        if (!this.requestHeaders.isEmpty()) {
+                          for (Map.Entry<String, String> entry : this.requestHeaders.entrySet()) {
+                            connection.setRequestProperty(entry.getKey(), entry.getValue());
+                          }
+                        }
 			InputStream stream = connection.getInputStream();
 			Scanner in = new Scanner(stream);
 			String response = in.nextLine(); //pull the response
@@ -226,6 +233,12 @@ public class IOSocket {
 
 	public String[] getProtocals() {
 		return protocals;
+	}
+  
+	private HashMap<String, String> requestHeaders = new HashMap<String, String>();
+
+	public void addHeader(String key, String value) {
+          requestHeaders.put(key, value);
 	}
 	
 	private class ConnectTimeout extends TimerTask {
